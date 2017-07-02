@@ -7,15 +7,16 @@ fi
 
 action=${1}
 vim=${2}
+proxy=${3}
 
-proxyOn
+proxyOn "$proxy"
 
 case $action in
     update)
         updateCfg $vim
         ;;
     install)
-        install $vim
+        install $vim "$proxy"
         ;;
     installYcm)
         installYcm $vim

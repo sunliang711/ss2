@@ -1,6 +1,6 @@
 #!/bin/bash
 usage(){
-    echo "usage: $(basename $0) install [vim|nvim]"
+    echo "usage: $(basename $0) install [vim|nvim] [socks5 proxy]"
     echo "       $(basename $0) uninstall [vim|nvim]" 
     echo "       $(basename $0) installYcm [vim|nvim]"
     echo "       $(basename $0) installVimGo"
@@ -151,6 +151,7 @@ install(){
         echo "Unkown input '$vim',input vim or nvim!!">&2
         exit 1
     fi
+    proxy=${2}
     installFont
     #不同的vim不同的路径
     if [[ "$vim" == "nvim" ]];then
@@ -181,8 +182,14 @@ install(){
     cp -r ./ftplugin $destdir
 
     msg  "Downloading vim-plug from github..."
-    curl -fLo $destdir/autoload/plug.vim --create-dirs \
-        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    if [ -n "$proxy" ];then
+	echo "use proxy5:$proxy"
+        curl --socks5 "$proxy" -fLo $destdir/autoload/plug.vim --create-dirs \
+            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    else
+        curl -fLo $destdir/autoload/plug.vim --create-dirs \
+            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    fi
     # if netstat -tan|grep :::1080;then
     #     curl --socks5 127.0.0.1:1080 -fLo $destdir/autoload/plug.vim --create-dirs \
     #         https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
@@ -263,17 +270,20 @@ installVimGo(){
 }
 
 proxyOn(){
-    if command -v ss-client >/dev/null 2>&1;then
-        ss-client globalStart
-        port=8118
-        if netstat -tan |grep LISTEN|grep -q "$port";then
-            export http_proxy="127.0.0.1:$port"
-            export HTTP_PROXY="$http_proxy"
-            export https_proxy="$http_proxy"
-            export HTTPS_PROXY="$http_proxy"
-        fi
-    else
-        echo "No proxy is used."
-    fi
+    # if command -v ss-client >/dev/null 2>&1;then
+    #     ss-client globalStart
+    #     port=8118
+    #     if netstat -tan |grep LISTEN|grep -q "$port";then
+    #         export http_proxy="127.0.0.1:$port"
+    #         export HTTP_PROXY="$http_proxy"
+    #         export https_proxy="$http_proxy"
+    #         export HTTPS_PROXY="$http_proxy"
+    #     fi
+    # else
+    #     echo "No proxy is used."
+    # fi
+    defaultProxy=${1}
+    git config --global http.proxy "$defaultProxy"
+    git config --global https.proxy "$defaultProxy"
 }
 
