@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $# != 3 ];then
+if [ $# != 2 ];then
     echo "Usage: `basename $0` user daemon_opt"
     exit 1
 fi
