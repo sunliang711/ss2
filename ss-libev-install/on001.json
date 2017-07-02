@@ -1,0 +1,10 @@
+{
+	"server":"0.0.0.0",
+	"server_port":6000,
+	"password":"6000",
+	"method":"chacha20",
+	"local_port":1080,
+    "owner":"nobody",
+    "traffic_limit":"100G",
+	"timeout":60
+}

@@ -1,0 +1,26 @@
+#  This file is part of ss-libev.
+#
+#  ss-libev is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  This file is default for Debian packaging. See also
+#  /etc/default/ss-libev for environment variables.
+
+[Unit]
+Description=ss-libev Default Server Service
+After=network.target
+
+[Service]
+Type=forking
+EnvironmentFile=/etc/default/ss-libev.environment
+User=root
+Group=nogroup
+LimitNOFILE=32768
+PIDFile=/var/run/ss-libev/ss_0.pid
+ExecStart=/opt/ss-libev/ss-multi-port.sh $USER  $DAEMON_ARGS
+
+[Install]
+WantedBy=multi-user.target
+

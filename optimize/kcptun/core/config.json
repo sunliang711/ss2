@@ -1,0 +1,13 @@
+{
+    "listen": ":1240",
+    "target": "127.0.0.1:124",
+    "crypt": "aes",
+    "dscp": 46,
+    "key": "test",
+    "mode": "fast2",
+    "mtu": 1350,
+    "nocomp":false,
+    "sndwnd": 2048,
+    "rcvwnd": 256
+}
+

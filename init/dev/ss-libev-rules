@@ -1,0 +1,10 @@
+#!/bin/bash
+#本文件依赖ss-libev中配置文件
+root=/opt/ss-libev
+allCfg=$(ls $root/on*.json)
+
+for cfg in $allCfg;do
+    grep '"server_port"' $cfg | grep -oP '\d+' | awk '{print "-A INPUT -p tcp -m tcp --dport " $0 " -j ACCEPT"}'
+    #没有-j,只用来统计这个端口的流量
+    grep '"server_port"' $cfg | grep -oP '\d+' | awk '{print "-A OUTPUT -p tcp -m tcp --sport " $0 }'
+done

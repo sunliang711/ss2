@@ -1,0 +1,4 @@
+#!/bin/bash
+#sysctl -p
+#/usr/local/bin/ss-go start &
+#/usr/local/bin/ss-go-nofw start &

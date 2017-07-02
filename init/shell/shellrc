@@ -1,0 +1,392 @@
+#BEGIN mode
+set -o vi
+#END
+
+#BEGIN environment variable
+[ -d $HOME/Documents/go ] && export GOPATH=$HOME/Documents/go
+
+#export LS_COLORS=$LS_COLORS:"di=0;33:"
+#export PS1='[\u@\h \[\e[32;1m\]\W\\$\e[0m'
+#export PS1='\[\033[1;34m\]\u@\h\[\033[00m\]:\[\033[00;33m\]\W\[\033[00m\]\$ '
+
+if command -v clang >/dev/null 2>&1;then
+    export CC=$(command -v clang)
+
+fi
+if command -v clang++ >/dev/null 2>&1;then
+    export CXX=$(command -v clang++)
+fi
+
+#解决git log乱码
+#因为git log调用less命令
+export LESSCHARSET=utf-8
+#END environment variable
+
+
+#BEGIN alias
+case $(uname) in
+    "Linux")
+        alias lA='ls -aF --color=auto'
+        alias la='ls -AF --color=auto'
+        alias ll='ls -lF --color=auto'
+        alias l='ls -F --color=auto'
+        alias ls='ls -F --color=auto'
+        alias editcfg='vi ~/.bashrc'
+        ;;
+    "Darwin")
+        alias lA='ls -aFG'
+        alias la='ls -AFG'
+        alias ll='ls -lFG'
+        alias l='ls -FG'
+        alias ls='ls -FG'
+        alias editcfg='vi ~/.bash_profile'
+        alias brew='echo "use socks5 proxy"&&ALL_PROXY=socks5://localhost:1080 brew'
+        export PATH=/usr/local/Cellar/privoxy/3.0.26/sbin:$PATH
+        ;;
+esac
+alias halt='sudo shutdown -h now'
+alias reboot='sudo reboot'
+alias cd..='cd ..'
+alias cd-='cd -'
+alias grep='grep --color=auto'
+#tcp listen
+alias listen='netstat -tan|grep LISTEN'
+#udp listen
+alias ulisten='netstat -uan|grep LISTEN'
+#当使用sudo执行alias地时候会找不到alias，需要这样设置
+alias sudo='sudo '
+alias cdgo="cd $GOPATH/src/github.com"
+
+if command -v vim >/dev/null 2>&1;then
+    alias vi='vim'
+fi
+
+if command -v apt-get >/dev/null 2>&1;then
+    alias apt-get='sudo apt-get'
+fi
+
+if command -v yum >/dev/null 2>&1;then
+    alias yum='sudo yum'
+fi
+
+if command -v dnf >/dev/null 2>&1;then
+    alias dnf='sudo dnf'
+fi
+
+if command -v emacs >/dev/null 2>&1;then
+    alias emacs='emacs -nw'
+fi
+
+if command -v nvim >/dev/null 2>&1;then
+    alias vim='nvim'
+fi
+
+if command -v free >/dev/null 2>&1;then
+    if command -v pacman >/dev/null 2>&1;then
+        alias free='free -hw'
+    else
+        alias free='free -h'
+    fi
+fi
+alias ss-local=/usr/local/share/ss-local/ss-local
+#END alias
+
+#BEGIN function
+if command -v git >/dev/null 2>&1;then
+    ghclone(){
+        p=${1:?"Usage: ghclone githubAccount/xx.git [newDir]"}
+        if (($#>1));then
+            newname=${2}
+            git clone "https://github.com/$p" "$newname"
+        else
+            git clone "https://github.com/$p"
+        fi
+    }
+    gcclone(){
+        gpoff
+        p=${1:?"Usage: gcclone coding.netAccount/xx.git [newDir]"}
+        if (($#>1));then
+            newname=${2}
+            git clone "https://git.coding.net/$p" "$newname"
+        else
+            git clone "https://git.coding.net/$p"
+        fi
+    }
+    gpon(){
+        #add default parameter
+        local proxy=${1:-http://localhost:8118}
+
+        git config --global http.proxy $proxy
+        git config --global https.proxy $proxy
+        # git config --global http.proxy "socks5://127.0.0.1:1080"
+        # git config --global https.proxy "socks5://127.0.0.1:1080"
+        gpstatus
+    }
+    gpoff(){
+        #git proxy off function
+        git config --global --unset-all http.proxy
+        git config --global --unset-all https.proxy
+    }
+    gpstatus(){
+        if git config --global -l | grep http.proxy >/dev/null 2>&1;then
+            echo "git proxy is on"
+            git config --global -l | \grep proxy
+        else
+            echo "git proxy is off"
+        fi
+    }
+fi
+
+echoExec(){
+    cmd=${1:?"missing cmd"}
+    echo "$cmd ..."
+    eval "$cmd"
+}
+
+proxyon(){
+    #delete: grep -P can not work on mac
+    #port=$(grep -oP '(?<=listen-address 127.0.0.1:)\d+' /usr/local/share/ss-local/privoxy.config)
+    port=8118
+    echoExec "export http_proxy=localhost:$port"
+    echoExec "export https_proxy=$http_proxy"
+    echoExec "export HTTP_PROXY=$http_proxy"
+    echoExec "export HTTPS_PROXY=$http_proxy"
+    if ! netstat -tan | grep LISTEN | grep "$port" >/dev/null 2>&1;then
+        echo "Warning: local proxy doesn't work on port $port"
+    fi
+}
+
+proxyoff(){
+    echoExec "unset http_proxy"
+    echoExec "unset https_proxy"
+    echoExec "unset HTTP_PROXY"
+    echoExec "unset HTTPS_PROXY"
+}
+
+proxystatus(){
+    # if declare -x | grep 'http_proxy="\{,1\}127.0.0.1:8118' >/dev/null 2>&1;then
+    if declare -x | grep 'http_proxy=localhost:8118' >/dev/null 2>&1;then
+        echo "http proxy is set:"
+        declare -x |grep 8118
+    else
+        echo "http proxy is not set"
+    fi
+}
+
+function incrementBackup(){
+    if (($# !=2));then
+        echo "Usage: incrementBackup srcDir dstDir"
+        return 1
+    fi
+    src="$1"
+    dst="$2"
+
+    if [ ! -e "$src" ];then
+        echo "*Warning* $src does not exist,bye."
+        return 1
+    fi
+
+    #把src转成绝对路径
+    if [[  "${src:0:1}" != "/" ]];then
+        src="$PWD/$src"
+    fi
+
+    #把dst转成绝对路径
+    if [[  "${dst:0:1}" != "/" ]];then
+        dst="$PWD/$dst"
+    fi
+
+    echo "source directory is: $src"
+    echo "destination directory is: $dst"
+
+    if [[ ! -d "$dst" ]];then
+        mkdir -pv "$dst"
+    fi
+
+    #遍历src下的文件
+    for eachItem in $(\ls $src);do
+        srcItem="$src/$eachItem"
+        dstItem="$dst/$eachItem"
+        echo "srcItem is $srcItem"
+        echo "dstItem is $dstItem"
+        #如果srcItem是目录
+        if [[ -d "$srcItem" ]];then
+            #如果dstItem不存在，则直接复制过去，否则递归调用本函数
+            if [[ ! -e "$dstItem" ]];then
+                echo "cp -r $srcItem $dstItem"
+                cp -r "$srcItem" "$dstItem"
+            else
+                #要求dstItem也是目录
+                if [[ ! -d "$dstItem" ]];then
+                    echo "*Error* $srcItem is directory but $dstItem is not"
+                    return 1
+                fi
+                echo "incrementBackup $srcItem $dstItem"
+                incrementBackup "$srcItem" "$dstItem"
+            fi
+
+        #如果srcItem是文件
+        else
+            #不存在的话直接复制过去
+            if [[ ! -e "$dstItem" ]];then
+                echo "cp $srcItem $dstItem"
+                cp -f "$srcItem" "$dstItem"
+            else
+            #存在的话则比较文件日期，当srcItem比dstItem新的时候覆盖掉后者
+                if [[ "$srcItem" -nt "$dstItem" ]];then
+                    echo "cp $srcItem $dstItem"
+                    cp -f "$srcItem" "$dstItem"
+                fi
+            fi
+        fi
+    done
+}
+
+#创建目录并进入该目录
+function mkcddir(){
+    if (($#!=1));then
+        echo "Usage: mkcddir new_dir_name_here"
+        return 1
+    fi
+    if [ -e "$1" ];then
+        echo "$1 already exists"
+        return 1
+    fi
+    mkdir "$1" && cd $_
+}
+# 检测出当前系统的版本，形如ubuntu-16.10,archlinux,fedora-23,centos-6.8,debian-8,macos
+currentOS(){
+    local currentos=
+    case "$(uname)" in
+        "Linux")
+            #pacman -> archlinux
+            if command -v pacman >/dev/null 2>&1;then
+                currentos="archlinux-$(uname -r)"
+
+            #apt-get -> debian or ubuntu
+            elif command -v apt-get >/dev/null 2>&1;then
+                #get version info from lsb_release -a
+                #lsb_release -a命令会有个错误输出No LSB modules are available.把这个丢弃使用 2>/dev/null
+                lsb=$(lsb_release -a 2>/dev/null)
+                distributor=$(echo "$lsb" | grep 'Distributor ID' | grep -oP ':.*' | grep -oP '\w+')
+                if [[ "$distributor" == "Ubuntu" ]];then
+                    currentos=$(echo "$lsb" | grep "Description" | awk -F: '{print $2}' | awk '{print $1"-"$2}')
+                elif [[ "$distributor" == "Debian" ]];then
+                    release=$(echo "$lsb" | grep 'Release' | grep -oP ':.*' | grep -oP '\d.+')
+                    currentos="$distributor-$release"
+                else
+                    currentos="error(not ubuntu or debian)"
+                fi
+            #yum -> centos or fedora
+            elif command -v yum >/dev/null 2>&1;then
+                info=$(cat /etc/redhat-release)
+                os=$(echo $info | awk '{print $1}')
+                release=$(echo $info | grep -oP '(?<=release )\d[^ \t]+')
+                currentos="$os-$release"
+            else
+                currentos="unknown"
+            fi
+            ;;
+        "Darwin")
+            release=$(sw_vers -productVersion)
+            currentos="macos-$release"
+            ;;
+        *)
+            currentos="unknown"
+            ;;
+    esac
+    echo "$currentos" | tr A-Z a-z
+}
+
+# bk(){
+#     if (($# !=1));then
+#         echo "Usage: bk The_exist_file_or_directory" 1>&2
+#         return 1
+#     fi
+#     if [ ! -e "$f" ];then
+#         echo "$f does not exist!"
+#         return 2
+#     fi
+#     cp -n "$1" "$1.bak"
+# }
+
+#rotate backup
+bk(){
+    if (($# < 1));then
+        echo "Usage: bk the_existing_file_or_directory [optional_max_number]"
+        return 1
+    fi
+    local file="$1"
+    local maxNo="${2:-7}"
+    if [ ! -e "$file" ];then
+        echo "$file" does not exist!
+        return 2
+    fi
+    if ! echo "$maxNo" | grep '^[0-9]\+$' >/dev/null 2>&1;then
+        echo "optional_max_number must be number!"
+        return 3
+    fi
+    if (($maxNo<1));then
+        echo "optional_max_number must >= 1"
+        return 4
+    fi
+
+    rm -vf "${file}.${maxNo}" 2>/dev/null
+    ((maxNo--))
+    for i in $(seq "$maxNo" -1 1);do
+        ((j=i+1))
+        mv -v "${file}.${i}" "${file}.${j}" 2>/dev/null
+    done
+    mv -v "${file}" "${file}.1"
+}
+
+slientExe(){
+    eval "$@" >/dev/null 2>&1
+}
+
+godoc(){
+    if command -v godoc >/dev/null 2>&1;then
+        if ! ps aux|grep 'godoc -http=:12306'|grep -v grep;then
+            #因为godoc做本地文档服务器的时候，会把GOPATH中的本地代码也显示出来
+            #如果本地代码很多的时候，这样回显得很乱
+            #把GOPATH设置到一个假的GOPATH地方
+            sh -c "GOPATH=~; nohup godoc -http=:12306 -play -index&"
+        fi
+    fi
+}
+
+pgrep(){
+    if (($# != 1));then
+        echo "Usage: pgrep some_program_name"
+        return 1
+    fi
+    local name
+    name=${1}
+    ps aux | grep "${name}" | grep -v grep
+}
+
+#流量统计输出
+traffic(){
+	if ! command -v iptables >/dev/null 2>&1;then
+		echo "need iptables command"
+		return 1
+	fi
+    whichPort=$1
+    if [ -z "$whichPort" ];then
+        msg=$(iptables -nvL OUTPUT)
+    else
+        msg=$(iptables -nvL OUTPUT | grep ":$whichPort")
+    fi
+    if [ -z "$msg" ];then
+        echo "Can't find port $whichPort traffic"
+    else
+        echo "$msg"|grep -v Chain|grep -v pkts|awk '{print $3 " " $10 "  " $2}'|sed 's/spt/port/'
+    fi
+}
+#END function
+
+#BEGIN others
+if command -v screenfetch >/dev/null 2>&1;then
+    screenfetch
+fi
+#END others

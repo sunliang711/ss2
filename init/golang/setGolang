@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#set golang environment
+if command -v go >/dev/null 2>&1;then
+    if [ ! -d $HOME/Documents/go ];then
+        mkdir -pv $HOME/Documents/go/src
+    fi
+fi

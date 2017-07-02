@@ -1,0 +1,103 @@
+#!/bin/bash
+ROOT=/kcptun
+cd "$ROOT"
+prgname=$(ls server_linux*)
+echo "---------------------------------------------------"
+echo "kcptun app name is: $ROOT/$prgname"
+echo "kcptun config file is :$ROOT/config.json"
+echo "---------------------------------------------------"
+start(){
+    if [ -z "$prgname" ];then
+        echo "kcptun server app not found in $ROOT">&2 
+        exit 1
+    fi
+    if ps aux | grep -v grep | grep -q ${prgname};then
+        echo "Warning: ${prgname} is already running,quit"
+        exit 1
+    fi
+    ./${prgname} -c config.json > /dev/null  2>&1 &
+    if ps aux | grep -v grep | grep -q  ${prgname};then
+        echo "OK: ${prgname} has started"
+    else
+        echo "Failed: ${prgname} start failed!"
+    fi
+}
+stop(){
+    pid=`ps -ef | grep ${prgname} | grep -v grep | awk '{print $2}'`
+    if [[ "$pid" != ""  ]];then
+        echo -n "Found ${prgname} with pid: $pid,try to kill it ... "
+        kill -9 $pid
+        pid=`ps -ef | grep ${prgname} | grep -v grep | awk '{print $2}'`
+        if [[ -z "$pid" ]];then
+            echo  "[OK]"
+        else
+            echo  "[Failed]"
+        fi
+    else
+        echo "Warning:${prgname} is not running,quit"
+    fi
+}
+restart(){
+    stop
+    start
+}
+status(){
+    pid=`ps -ef | grep ${prgname} | grep -v grep | awk '{print $2}'`
+    if [ -n $pid ];then
+        echo "$prgname is running with pid: $pid"
+    else
+        echo "$prgname is not running"
+    fi
+}
+
+config(){
+    editor="vi"
+    if command -v vim >/dev/null 2>&1;then
+        editor="vim"
+    fi
+    "$editor" "$ROOT/config.json"
+}
+usage(){
+    echo "Usage: $0 {start|stop|status|restart|config}">&2
+    exit 1
+}
+
+uninstall(){
+    if [ -d "$ROOT" ];then
+        rm -rf "$ROOT"
+    fi
+
+    if grep -q "kcptun start" /etc/rc.local;then
+        sed -i "/kcptun start/d" /etc/rc.local
+    fi
+
+    if grep -q "alias kcptun" ~/.bashrc;then
+        sed -i "/alias kcptun/d" ~/.bashrc
+    fi
+}
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+        ;;
+    restart)
+        restart
+        ;;
+    config)
+        config
+        restart
+        ;;
+    uninstall)
+        stop
+        uninstall
+        ;;
+    *)
+        usage
+        ;;
+esac
+exit 0

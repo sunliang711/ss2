@@ -1,0 +1,23 @@
+#!/bin/bash
+trafficDir=/opt/traffic
+[[ -d $trafficDir ]] || mkdir -p $trafficDir
+#关闭防火墙时，把被监控的OUTPUT流量输出到文件保存(文件名称为tcp+端口号),如果原来存在该文件则要累加
+#设置监控的地方在ss-libev-rules中
+
+iptables -nvxLOUTPUT | grep tcp | grep spt:| while read line;do
+    file=tcp$(echo $line | grep tcp | grep -oP '(?<=:)\d+');
+    lastTraffic=0
+    if [ -e "$trafficDir/$file" ];then
+        lastTraffic=$(cat "$trafficDir/$file")
+    fi
+    thisTimeTraffic=$(echo $line | awk '{print $2}')
+
+    ((total=$lastTraffic+$thisTimeTraffic))
+    echo "total traffic:$total"
+    echo "$total" >"$trafficDir/$file"
+ done
+
+/sbin/iptables -F
+/sbin/iptables -P INPUT ACCEPT
+/sbin/iptables -P OUTPUT ACCEPT
+/sbin/iptables -P FORWARD ACCEPT
