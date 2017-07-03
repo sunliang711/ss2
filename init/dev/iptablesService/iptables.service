@@ -1,0 +1,14 @@
+[Unit]
+Description=iptables
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=STARTSCRIPT
+ExecReload=STARTSCRIPT
+ExecStop=STOPSCRIPT
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
