@@ -44,7 +44,7 @@ cd libsodium*
 ./configure --prefix=/usr && make
 make install
 cp ./src/libsodium/.libs/libsodium.so.* "$outputdir"
-#ldconfig
+ldconfig
 
 cd ..
 
@@ -55,16 +55,16 @@ echo "extract mbedtls..."
 tar xf mbedtls*tgz
 cd mbedtls*
 make SHARED=1 CFLAGS=-fPIC
-make install
+make DESTDIR=/usr install
 cp ./library/lib* "$outputdir"
-#ldconfig
+ldconfig
 
 cd ..
 
 cd shadowsocks-libev
 ./autogen.sh && ./configure && make
 cp ./src/ss-* "$outputdir"
-#make install
+make install
 
 echo "All files generated are in $outputdir"
 
