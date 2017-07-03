@@ -1,16 +1,16 @@
 #!/bin/bash
-proxy=0
-if [[ "$1" == "-p" ]];then
-	proxy=1
-fi
 shopt -s expand_aliases
-if (("$proxy"==1));then
-	echo "Using proxy..."
-    socksproxy="socks5://10.0.0.1:23456"
-	git config --global http.proxy "$socksproxy"
-	git config --global https.proxy "$socksproxy"
-	alias curl="curl --socks5 $socksproxy"
+proxy="$1"
+if [ -n "$proxy" ];then
+    if ! echo "$proxy" | grep -q 'socks5://';then
+        proxy="socks5://$proxy"
+    fi
+	echo "Using socks5 proxy: $proxy"
+	git config --global http.proxy "$proxy"
+	git config --global https.proxy "$proxy"
+	alias curl="curl --socks5 $proxy"
 fi
+
 #sh -c 'printf "deb http://httpredir.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/jessie-backports.list'
 apt-get update -y
 apt install -y curl gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libudns-dev automake git
