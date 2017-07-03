@@ -7,7 +7,7 @@ tail=$root/tail.rules
 all=$root/all.rules
 
 cat $header >$all
-for i in $(ls $customRulesDir/*);do
+for i in $(ls $customRulesDir/* 2>/dev/null);do
     echo $i
     #可执行的脚本或程序则执行输出到$all
     if file $i | grep -q 'executable';then
