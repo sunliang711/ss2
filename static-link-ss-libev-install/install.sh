@@ -18,6 +18,9 @@ installss(){
     #create db
     sqlite3 "$db" "create table config(port int primary key,password text,method text,udpRelay int,fastOpen int,enabled int);" || { echo "create table config failed!"; exit 1; }
 
+    #iptables.service plugin
+    cp ./sslibev.sh /opt/iptables/plugin/ || { echo "You didn't install iptables service,install sslibev.sh plugin failed!"; }
+
     sed "s|ROOT|$root|" ./sslibev.service > "$serviceFileDir/sslibev.service"
     sed "s|ROOT|$root|" ./start.sh > "$root/start.sh"
     sed "s|ROOT|$root|" ./ssserver.sh > /usr/local/bin/ssserver.sh
