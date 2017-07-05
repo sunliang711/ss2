@@ -8,27 +8,20 @@ fi
 limitfile=/etc/security/limits.conf
 limit=51200
 cp -v "$limitfile" "${limitfile}.bak"
-if ! grep -q '* soft nofile' "$limitfile" ;then
-    echo "* soft nofile $limit" >> "$limitfile"
-else
-    sed -ri "s/(^\*\s+soft\s+nofile\s+)[0-9]+/\1$limit/" "$limitfile"
-fi
-if ! grep -q '* hard nofile' "$limitfile" ;then
-    echo "* hard nofile $limit" >>"$limitfile"
-else
-    sed -ri "s/(^\*\s+hard\s+nofile\s+)[0-9]+/\1$limit/" "$limitfile"
-fi
+echo "* soft nofile $limit" >> "$limitfile"
+echo "* hard nofile $limit" >> "$limitfile"
 
-#backup
-cp -v /etc/sysctl.conf{,.bak}
-cat>/etc/sysctl.conf<<EOF
+#tested on debian
+/sbin/modprobe tcp_hybla && echo tcp_hybla > /etc/modules-load.d/shadowsocks.conf
+
+ctlfile=/etc/sysctl.d/local.conf
+cat > $ctlfile <<EOF
 fs.file-max = 51200
 net.ipv4.conf.lo.accept_redirects=0
 net.ipv4.conf.all.accept_redirects=0
 net.ipv4.conf.eth0.accept_redirects=0
 net.ipv4.conf.default.accept_redirects=0
 net.ipv4.ip_local_port_range = 10000 65000
-net.ipv4.tcp_congestion_control = hybla
 net.ipv4.tcp_fin_timeout = 30
 net.ipv4.tcp_fastopen = 3
 net.ipv4.tcp_keepalive_time = 1200
@@ -52,4 +45,7 @@ net.core.rmem_default = 8388608
 net.core.rmem_max = 67108864
 net.core.wmem_max = 67108864
 EOF
+if sysctl net.ipv4.tcp_available_congestion_control | grep -q hybla;then
+	echo 'net.ipv4.tcp_congestion_control = hybla' >>$ctlfile	
+fi
 sysctl -p
