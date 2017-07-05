@@ -1,11 +1,10 @@
 #!/bin/bash
 #对数据库进行操作的api
 
-# sqlite3 "$db" "CREATE TABLE IF NOT EXISTS portConfig (type text,port int,enabled int,inputTraffic int,outputTraffic int,primary key(port,type));"
+# sqlite3 "$db" "CREATE TABLE IF NOT EXISTS portConfig (type text,port int,enabled int,inputTraffic int,outputTraffic int,plugin int,primary key(port,type));"
 db=ROOT/db
 list(){
     echo -e ".header on\n.mode column\nselect * from portConfig;" | sqlite3 "$db"
-    # sqlite3 "$db" "select * from portConfig;"
 }
 
 checkType(){
@@ -35,9 +34,23 @@ add(){
     checkType $type || exit 1
     port=$2
     checkPort $port || exit 1
-    sqlite3 "$db" "insert into portConfig values(\"$type\",$port,1,0,0);" || { echo "Add failed"; exit 1; }
+    sqlite3 "$db" "insert into portConfig values(\"$type\",$port,1,0,0,0);" || { echo "Add failed"; exit 1; }
 }
 
+#portConfig表的plugin字段表示是否是plugin，如果是plug的话，启动service的时候先把plugin为1的记录删除，然后把eanbled为1
+#的端口加入到规则中，然后执行plugin文件夹下所有的脚本，在这些脚本里面调用addPluginPort来增加端口，然后启用这些端口
+addPluginPort(){
+    usage="Usage: addPluginPort type port\n\t\tfor example:addPluginPort tcp 8388\n"
+    if (($#!=2));then
+        echo -e "$usage"
+        exit 1
+    fi
+    type=$1
+    checkType $type || exit 1
+    port=$2
+    checkPort $port || exit 1
+    sqlite3 "$db" "insert into portConfig values(\"$type\",$port,1,0,0,1);" || { echo "Add failed"; exit 1; }
+}
 del(){
     usage="Usage: del type port\n\t\tfor example: del tcp 8388\n"
     if (($#!=2));then
@@ -142,6 +155,7 @@ getOutputTraffic(){
 usage(){
     echo "Usage: $(basename $0) list"
     echo -e "\t\t\tadd type port"
+    echo -e "\t\t\taddPluginPort type port"
     echo -e "\t\t\tdelete type port"
     echo -e "\t\t\tenable type port"
     echo -e "\t\t\tdisable type port"
@@ -156,6 +170,9 @@ case $1 in
     a|ad|add)
         add $2 $3
         systemctl restart iptables
+        ;;
+    addPluginPort)
+        addPluginPort $2 $3
         ;;
     de|del|dele|delete)
         del $2 $3
