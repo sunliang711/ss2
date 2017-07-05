@@ -13,6 +13,7 @@ gitconfig(){
     #save password for several minutes
     git config --global credential.helper cache
     git config --global alias.tree "log --oneline --graph --decorate --all"
+    git config --global alias.list "config --global --list"
     if command -v vim >/dev/null 2>&1;then
         git config --global core.editor vim
     fi
