@@ -54,7 +54,7 @@ fi
 
 read -p "set iptables? [Y/n] " setIp
 if [[ "$setIp" != [nN] ]];then
-    cd ./iptablesService
-    bash ./installIptablesService.sh
+    cd ./newIptablesService
+    bash ./install.sh
     cd -
 fi
