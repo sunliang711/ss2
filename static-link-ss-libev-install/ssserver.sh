@@ -15,7 +15,7 @@ add(){
     password=$2
     method=$3
     udpRelay=${4:-1}
-    mysql3 "$db" "insert into config(port,password,method,udpRelay,fastOpen,enabled) values($port,\"$password\",\"$method\",$udpRelay,1,1);" || { echo "add failed!"; exit 1; }
+    sqlite3 "$db" "insert into config(port,password,method,udpRelay,fastOpen,enabled) values($port,\"$password\",\"$method\",$udpRelay,1,1);" || { echo "add failed!"; exit 1; }
 }
 
 del(){
@@ -24,7 +24,7 @@ del(){
         exit 1
     fi
     port=$1
-    mysql3 "$db" "delete from config where port=$port;" || { echo "del failed!"; exit 1; }
+    sqlite3 "$db" "delete from config where port=$port;" || { echo "del failed!"; exit 1; }
 }
 
 enable(){
@@ -33,7 +33,7 @@ enable(){
         exit 1
     fi
     port=$1
-    mysql3 "$db" "update config set enabled=1 where port=$port;" || { echo "enable port:$port failed!"; exit 1; }
+    sqlite3 "$db" "update config set enabled=1 where port=$port;" || { echo "enable port:$port failed!"; exit 1; }
 }
 
 disable(){
@@ -42,7 +42,7 @@ disable(){
         exit 1
     fi
     port=$1
-    mysql3 "$db" "update config set enabled=0 where port=$port;" || { echo "enable port:$port failed!"; exit 1; }
+    sqlite3 "$db" "update config set enabled=0 where port=$port;" || { echo "enable port:$port failed!"; exit 1; }
 }
 
 update(){
@@ -66,7 +66,7 @@ update(){
     fastOpen=${5:-$oldFastOpen}
     enabled=${6:-$oldEnabled}
 
-    sqlite3 "$db" "update config set password=\"$password\",method=\"$method\",udpRelay=$udpRelay,fastOpen=$fastOpen,enabled=$enabled;" || { echo "update port:$port failed!"; exit 1; }
+    sqlite3 "$db" "update config set password=\"$password\",method=\"$method\",udpRelay=$udpRelay,fastOpen=$fastOpen,enabled=$enabled where port=$port;" || { echo "update port:$port failed!"; exit 1; }
 
 }
 
@@ -81,7 +81,7 @@ usage(){
     echo -e "\t\tdisable port"
     echo -e "\t\tupdate port password method [udpRelay] [fastOpen] [enabled]"
 }
-case $i in
+case $1 in
     list)
         list
         ;;

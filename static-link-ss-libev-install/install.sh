@@ -14,20 +14,21 @@ installss(){
     rm -rf $root >/dev/null 2>&1
     mkdir -p $root >/dev/null 2>&1
 
+    apt update && apt install -y sqlite3 || { echo "you must install sqlite3 yourself"; }
     #create db
     sqlite3 "$db" "create table config(port int primary key,password text,method text,udpRelay int,fastOpen int,enabled int);" || { echo "create table config failed!"; exit 1; }
 
-    sed "s|ROOT|$root|" ./sslibev.service > "$serviceFileDir"
+    sed "s|ROOT|$root|" ./sslibev.service > "$serviceFileDir/sslibev.service"
     sed "s|ROOT|$root|" ./start.sh > "$root/start.sh"
     sed "s|ROOT|$root|" ./ssserver.sh > /usr/local/bin/ssserver.sh
 
     chmod +x "$root/start.sh"
     chmod +x /usr/local/bin/ssserver.sh
 
-    tar xf ./ss-libev-binaries-static-link.tar.bzip2 
+    tar xf ./ss-libev-binaries-static-link.tar.bzip2
     cd ss-libev-binaries-static-link
-    cp ss-server $root 
-    chmod +x "$root/ss-server" 
+    cp ss-server $root
+    chmod +x "$root/ss-server"
     rm -rf ss-libev-binaries-static-link
     cd -
 }
