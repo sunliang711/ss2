@@ -11,12 +11,17 @@ check(){
     fi
 }
 installss(){
+    systemctl stop sslibev >/dev/null 2>&1
     rm -rf $root >/dev/null 2>&1
     mkdir -p $root >/dev/null 2>&1
 
-    apt update && apt install -y sqlite3 || { echo "you must install sqlite3 yourself"; }
+    if ! command -v sqlite3 >/dev/null 2>&1;then
+        echo "try to install sqlite3..."
+        apt update >/dev/null 2>&1
+        apt install -y sqlte3 || { echo "you mast install sqlite3 yourself."; }
+    fi
     #create db
-    sqlite3 "$db" "create table config(port int primary key,password text,method text,udpRelay int,fastOpen int,enabled int);" || { echo "create table config failed!"; exit 1; }
+    sqlite3 "$db" "create table config(port int primary key,password text,method text,owner text,trafficLimit text,udpRelay int,fastOpen int,enabled int);" || { echo "create table config failed!"; exit 1; }
 
     #iptables.service plugin
     cp ./sslibev.sh /opt/iptables/plugin/ || { echo "You didn't install iptables service,install sslibev.sh plugin failed!"; }
@@ -29,11 +34,10 @@ installss(){
     chmod +x /usr/local/bin/ssserver.sh
 
     tar xf ./ss-libev-binaries-static-link.tar.bzip2
-    cd ss-libev-binaries-static-link
-    cp ss-server $root
+    cp ./ss-libev-binaries-static-link/ss-server $root
     chmod +x "$root/ss-server"
     rm -rf ss-libev-binaries-static-link
-    cd -
+    systemctl daemon-reload
 }
 
 check

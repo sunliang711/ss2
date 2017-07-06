@@ -4,6 +4,8 @@ server=ROOT/ss-server
 db=ROOT/db
 
     # sqlite3 "$db" "create table config(port int primary key,password text,method text,udpRelay int,fastOpen int,enabled int);" || { echo "create table config failed!"; exit 1; }
+ROOT/ss-server -p 65000 -k password -m chacha20 -f /var/run/sslibev.pid
+
 ports=$(sqlite3 "$db" "select port,password,method,udpRelay,fastOpen from config where enabled=1") || { echo "Query failed!"; exit 1; }
 
 echo "$ports" | while read record;do
