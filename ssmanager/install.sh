@@ -28,11 +28,14 @@ rm -rf node-v6.9.1-linux-x64.tar.gz
 ln -sf $root/node-v6.9.1-linux-x64/bin/node /usr/local/bin/node
 ln -sf $root/node-v6.9.1-linux-x64/bin/npm /usr/local/bin/npm
 if (($proxy==1));then
-    npm config set proxy http://localhost:8118
-    npm config set https-proxy http://localhost:8118
-    #npm --proxy http://localhost:8118 i -g shadowsocks-manager
+    #npm config set proxy http://localhost:8118
+    #npm config set https-proxy http://localhost:8118
+    npm config set strict-ssl false
+    npm config set registry "http://registry.npmjs.org/"
+    npm --proxy http://localhost:8118 i -g shadowsocks-manager
+else
+    npm i -g shadowsocks-manager
 fi
-npm i -g shadowsocks-manager
 
 ln -sf $root/node-v6.9.1-linux-x64/lib/node_modules/shadowsocks-manager/bin/ssmgr /usr/local/bin/ssmgr
 
