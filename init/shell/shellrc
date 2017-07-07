@@ -383,10 +383,10 @@ traffic(){
     #     echo "$msg"|grep -v Chain|grep -v pkts|awk '{print $3 " " $10 "  " $2}'|sed 's/spt/port/'
     # fi
     echo "OUTPUT"
-    iptables -nvLOUTPUT | grep 'pt:' |  awk '{print $10"    "$2"    "$9}'
+    iptables -nvLOUTPUT | grep 'pt:' |  awk '{printf "%-5s %-10s %-10s\n",$9,$10,$2}'
     echo
     echo "INPUT"
-    iptables -nvLINPUT | grep 'pt:' | awk '{print $11"    "$2"    "$10}'
+    iptables -nvLINPUT | grep 'pt:' | awk '{printf "%-5s %-10s %-10s\n",$10,$11,$2}'
     echo
 }
 sshCopy(){
