@@ -11,7 +11,7 @@ done
 setProxy(){
     export http_proxy=http://localhost:8118
     export https_proxy=http://localhost:8118
-    sslocal.sh start 1 g || { echo "Start sslocal in global mode failed!"; exit 1; }
+    sslocal.sh restart 1 g || { echo "Start sslocal in global mode failed!"; exit 1; }
 }
 
 root=/opt/nodejs
@@ -25,13 +25,14 @@ mkdir $root
 wget -N --no-check-certificate https://nodejs.org/dist/v6.9.1/node-v6.9.1-linux-x64.tar.gz
 tar -xf node-v6.9.1-linux-x64.tar.gz -C $root
 rm -rf node-v6.9.1-linux-x64.tar.gz
-ln -s $root/node-v6.9.1-linux-x64/bin/node /usr/local/bin/node
-ln -s $root/node-v6.9.1-linux-x64/bin/npm /usr/local/bin/npm
+ln -sf $root/node-v6.9.1-linux-x64/bin/node /usr/local/bin/node
+ln -sf $root/node-v6.9.1-linux-x64/bin/npm /usr/local/bin/npm
 if (($proxy==1));then
-    npm --proxy http://localhost:8118 i -g shadowsocks-manager
-else
-    npm i -g shadowsocks-manager
+    npm config set proxy http://localhost:8118
+    npm config set https-proxy http://localhost:8118
+    #npm --proxy http://localhost:8118 i -g shadowsocks-manager
 fi
+npm i -g shadowsocks-manager
 
 ln -sf $root/node-v6.9.1-linux-x64/lib/node_modules/shadowsocks-manager/bin/ssmgr /usr/local/bin/ssmgr
 
@@ -91,12 +92,12 @@ plugins:
     #username: 'postmaster@sandbox920d4cd2c4ca4588be4325b85bbbe8f3.mailgun.org'
     #password: '7a3fc9a4e129aa0880fdec7cb34dd8b8'
     #host: 'smtp.mailgun.org'
-    #username: 'sunliang711@163.com'
-    #password: 'sl262732'
-    #host: 'smtp.163.com'
-    username: 'eagle@mailgun.eagle711.win'
+    username: 'sunliang711@163.com'
     password: 'sl262732'
-    host: 'smtp.mailgun.org'
+    host: 'smtp.163.com'
+    #username: 'eagle@mailgun.eagle711.win'
+    #password: 'sl262732'
+    #host: 'smtp.mailgun.org'
     # 这部分的邮箱和密码是用于发送注册验证邮件，重置密码邮件使用的，推荐使用 Mailgun.com
   webgui:
     use: true
