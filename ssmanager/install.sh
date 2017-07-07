@@ -81,7 +81,7 @@ plugins:
       season:
         price: 30
         flow: 200000000000
-              year:
+      year:
         price: 120
         flow: 200000000000
   email:
@@ -99,7 +99,7 @@ plugins:
   webgui:
     use: true
     host: '0.0.0.0'
-    port: '8088'
+    port: '80'
     site: 'http://eagle.com'
     # 改成你自己的域名
     gcmSenderId: '456102641793'
@@ -121,8 +121,9 @@ ss-manager -m aes-256-cfb -u --executable /usr/local/bin/ss-server --manager-add
 ssmgr -c ~/.ssmgr/ss.yml &
 ssmgr -c ~/.ssmgr/webgui.yml&
 EOF
+chmod +x start.sh
 
-cat>stop.sh<<EOF
+cat>stop.sh<<'EOF'
 #!/bin/bash
 pids=$(ps aux | grep ssmgr | grep -v grep | awk '{print $2}')
 for i in $pids;do
@@ -135,3 +136,4 @@ for i in $pids;do
 done
 EOF
 
+chmod +x stop.sh
