@@ -429,7 +429,7 @@ whouseport(){
     port=$2
     case $(uname) in
         Linux)
-            pid=$(fuser $port/$protocol 2>/dev/null| grep -oP '\d+')
+            pid=$(fuser $port/$protocol 2>/dev/null| awk '{print $1}'| grep -oP '\d+')
             if [ -z "$pid" ];then
                 echo "The port $protocol/$port is not in use."
             else
