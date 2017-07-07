@@ -11,6 +11,7 @@ done
 setProxy(){
     export http_proxy=http://localhost:8118
     export https_proxy=http://localhost:8118
+    sslocal.sh start 1 g || { echo "Start sslocal in global mode failed!"; exit 1; }
 }
 
 root=/opt/nodejs
@@ -37,6 +38,7 @@ ln -sf $root/node-v6.9.1-linux-x64/lib/node_modules/shadowsocks-manager/bin/ssmg
 tar jxf ../static-link-ss-libev-install/ss-libev-binaries-static-link.tar.bzip2
 cp ss-libev-binaries-static-link/ss-server /usr/local/bin
 cp ss-libev-binaries-static-link/ss-manager /usr/local/bin
+rm -rf ss-libev-binaries-static-link/
 
 mkdir ~/.ssmgr
 cat>~/.ssmgr/ss.yml<<EOF
@@ -116,14 +118,14 @@ plugins:
 db: 'webgui.sqlite'
 EOF
 
-cat>start.sh<<EOF
+cat>$root/start.sh<<EOF
 ss-manager -m aes-256-cfb -u --executable /usr/local/bin/ss-server --manager-address 127.0.0.1:2397 &
 ssmgr -c ~/.ssmgr/ss.yml &
 ssmgr -c ~/.ssmgr/webgui.yml&
 EOF
-chmod +x start.sh
+chmod +x $root/start.sh
 
-cat>stop.sh<<'EOF'
+cat>$root/stop.sh<<'EOF'
 #!/bin/bash
 pids=$(ps aux | grep ssmgr | grep -v grep | awk '{print $2}')
 for i in $pids;do
@@ -136,4 +138,4 @@ for i in $pids;do
 done
 EOF
 
-chmod +x stop.sh
+chmod +x $root/stop.sh
