@@ -6,7 +6,7 @@ set -o vi
 [ -d $HOME/Documents/go ] && export GOPATH=$HOME/Documents/go
 
 append_path(){
-    echo -e ${PATH//:/'\n'} | grep -c "^$1$" || export PATH=$PATH:$1
+    echo -e ${PATH//:/'\n'} | grep -c "^$1$" >/dev/null 2>&1 || export PATH=$PATH:$1
 }
 #set PATH
 append_path /usr/local/sbin
