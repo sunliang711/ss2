@@ -28,7 +28,8 @@ installss(){
 
     sed "s|ROOT|$root|" ./sslibev.service > "$serviceFileDir/sslibev.service"
     sed "s|ROOT|$root|" ./start.sh > "$root/start.sh"
-    sed "s|ROOT|$root|" ./ssserver.sh > /usr/local/bin/ssserver.sh
+    sed "s|ROOT|$root|" ./ssserver.sh > "$root/ssserver.sh"
+    ln -sf "$root/ssserver.sh" /usr/local/bin/ssserver.sh
 
     chmod +x "$root/start.sh"
     chmod +x /usr/local/bin/ssserver.sh

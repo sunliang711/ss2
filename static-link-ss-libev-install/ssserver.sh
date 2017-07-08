@@ -75,6 +75,10 @@ update(){
     sqlite3 "$db" "update config set password=\"$password\",method=\"$method\",owner=\"$owner\",trafficLimit=\"$trafficLimit\",udpRelay=$udpRelay,fastOpen=$fastOpen,enabled=$enabled where port=$port;" || { echo "update port:$port failed!"; exit 1; }
 
 }
+uninstall(){
+    rm -rf ROOT
+    rm /usr/local/bin/ssserver.sh
+}
 
 usage(){
     echo "Usage: $(basename $0) CMD"
@@ -86,6 +90,7 @@ usage(){
     echo -e "\t\tenable port"
     echo -e "\t\tdisable port"
     echo -e "\t\tupdate port password method [owner] [trafficLimit] [udpRelay] [fastOpen] [enabled]"
+    echo -e "\t\tuninstall"
 }
 cmd=$1
 shift 1
@@ -107,6 +112,9 @@ case $cmd in
         ;;
     update)
         update "$@"
+        ;;
+    uninstall)
+        uninstall
         ;;
     *)
         usage
