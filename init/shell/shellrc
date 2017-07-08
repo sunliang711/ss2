@@ -440,6 +440,33 @@ whouseport(){
         ;;
     esac
 }
+mailto(){
+    if ! command -v ssmtp >/dev/null 2>&1;then
+        echo "Please install ssmtp and configure it firstly!"
+        return 1
+    fi
+    if (($#<3));then
+        echo "Usage: mailto receiver subject content"
+        return 1
+    fi
+    cfg=/etc/ssmtp/ssmtp.conf
+    receiver=$1
+    subject=$2
+    content=$3
+    #过滤注释，因为里面可能有老的配置
+    From=$(sed -rn '/^[^#]/p' $cfg | grep -oP '(?<=root=).+')
+    mailfile=/tmp/ssmtp-tmpfile
+    echo "From : $From"
+    echo "mail file : $mailfile"
+    cat >$mailfile<<EOF
+To: $receiver
+From: $From
+Subject: $subject
+
+$content
+EOF
+    ssmtp $receiver < $mailfile && echo "Your email has sent successfully!"
+}
 #END function
 
 #BEGIN others
