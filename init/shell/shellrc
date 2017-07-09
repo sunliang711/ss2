@@ -3,7 +3,7 @@ set -o vi
 #END
 
 #BEGIN environment variable
-[ -d $HOME/Documents/go ] && export GOPATH=$HOME/Documents/go
+[ -d $HOME/go ] && export GOPATH=$HOME/go
 
 append_path(){
     echo -e ${PATH//:/'\n'} | grep -c "^$1$" >/dev/null 2>&1 || export PATH=$PATH:$1
@@ -66,7 +66,7 @@ alias listen='netstat -tan|grep LISTEN'
 alias ulisten='netstat -uan|grep LISTEN'
 #当使用sudo执行alias地时候会找不到alias，需要这样设置
 alias sudo='sudo '
-alias cdgo="cd $GOPATH/src/github.com"
+alias cdgo="cd $GOPATH/src"
 
 if command -v vim >/dev/null 2>&1;then
     alias vi='vim'

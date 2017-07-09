@@ -2,7 +2,8 @@
 
 #set golang environment
 if command -v go >/dev/null 2>&1;then
-    if [ ! -d $HOME/Documents/go ];then
-        mkdir -pv $HOME/Documents/go/src
+    GOPATH=$HOME/go
+    if [ ! -d $GOPATH ];then
+        mkdir -pv $GOPATH/src
     fi
 fi
