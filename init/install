@@ -55,9 +55,9 @@ if [[ "$installDev" != [nN] ]];then
         "Debian")
             /bin/bash dev-debian
             ;;
-        "Darwin")
-            /bin/bash dev-mac
-            ;;
+        #"Darwin")
+            #/bin/bash dev-mac
+            #;;
     esac
     cd -
     echo "Done."
@@ -71,7 +71,7 @@ if [[ "$setProxy" != [nN] ]];then
     #     exit 1
     # fi
     # sudo /usr/local/bin/ss-client globalRestart
-    ssclient-go globalRestart
+    #ssclient-go globalRestart
     if netstat -tan |grep -q 8118;then
         export http_proxy=localhost:8118
         export HTTP_PROXY=localhost:8118

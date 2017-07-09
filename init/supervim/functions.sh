@@ -84,6 +84,8 @@ installFont(){
         "Darwin")
             ALL_PROXY=socks5://127.0.0.1:1080 brew tap caskroom/fonts
             ALL_PROXY=socks5://127.0.0.1:1080 brew cask install font-hack-nerd-font
+            echo "set Knack nerd font in iterm"
+
             ;;
         MINGW32*)
             echo "Please install nerd font manually."

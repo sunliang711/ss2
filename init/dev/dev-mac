@@ -14,10 +14,9 @@ fi
 shopt -s expand_aliases
 alias BREW='ALL_PROXY=socks5://127.0.0.1:1080 brew'
 BREW install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt gnu-which wget go neovim/neovim/neovim python python3 privoxy
-ln -s  /usr/local/Cellar/privoxy/*/sbin/privoxy /usr/local/bin/privoxy
-if (($? != 0));then
-    echo 'Warning:privoxy soft link create error.'
-fi
+SBIN=$(find /usr/local/Cellar/privoxy -name "sbin")
+ln -sf  $SBIN/privoxy /usr/local/bin/privoxy
+pkill privoxy
 BREW tap homebrew/dupes;
 BREW install grep
 

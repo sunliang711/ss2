@@ -99,7 +99,6 @@ if command -v free >/dev/null 2>&1;then
         alias free='free -h'
     fi
 fi
-alias ss-local=/usr/local/share/ss-local/ss-local
 #END alias
 
 #BEGIN function
