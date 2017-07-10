@@ -128,6 +128,8 @@ if command -v git >/dev/null 2>&1;then
 
         git config --global http.proxy $proxy
         git config --global https.proxy $proxy
+        echo "set git http.proxy $proxy"
+        echo "set git https.proxy $proxy"
         # git config --global http.proxy "socks5://127.0.0.1:1080"
         # git config --global https.proxy "socks5://127.0.0.1:1080"
         gpstatus
