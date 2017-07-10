@@ -11,13 +11,10 @@ usage(){
 
 needCmd(){
     cmd=${1:?"Missing command name"}
-    # fatal=${2:-"fatal"}
     echo -n "Check for $cmd ..."
     if ! command -v "$cmd" >/dev/null 2>&1;then
         echo -e "\t\t<Error: no found $cmd,failed!>" >&2
-        # if [[ "$fatal" == "fatal" ]];then
         exit 1
-        # fi
     else
         echo -e "\t\t[OK]"
     fi
@@ -113,15 +110,24 @@ updateCfg(){
 
 #ycm for golang clang
 installYcm(){
+    command -v cmake >/dev/null 2>&1 || { echo "Need cmake!"; exit 1; }
     vim=${1:?"install ycm for vim or nvim?"}
     if [[ "$vim" == "vim" ]];then
         dest="$HOME/.vim/plugins/YouCompleteMe"
+        cfgFile="$HOME/.vimrc"
     elif [[ "$vim" == "nvim" ]];then
         dest="$HOME/.config/nvim/plugins/YouCompleteMe"
+        cfgFile="$HOME/.config/nvim/init.vim"
     else
         echo "Valid input is vim or nvim!" >&2
         exit 1
     fi
+    echo "Ycm root is : $dest"
+    echo "vim/nvim config file is : $cfgFile"
+    sed -ibak "s|\"[ ]*\(Plug 'Valloric/YouCompleteMe'\)|\1|" $cfgFile
+    \rm "${cfgFile}bak"
+    $vim +PlugInstall +qa
+
     if [ -d "$dest" ];then
         cd "$dest"
         option=
@@ -137,6 +143,8 @@ installYcm(){
 
         #./install.py  --gocode-completer --clang-completer --system-libclang 
         eval ./install.py  "$option"
+    else
+        echo "Doesn't exist $dest"
     fi
 }
 
@@ -252,7 +260,7 @@ uninstall(){
 
 installVimGo(){
     read -p "Install vimGo for which? (vim/nvim)" vim
-    #不同得vim不同的路径
+    #不同vim不同的路径
     if [[ "$vim" == "nvim" ]];then
         destdir="$HOME/.config/nvim"
         cfgFile="$destdir/init.vim"
@@ -267,8 +275,10 @@ installVimGo(){
     \rm "${cfgFile}bak"
     export GOPATH=~/go
 
-    $vim PlugInstall +qall
-    $vim GoInstallBinaries +qall
+    echo "$vim PlugInstall..."
+    $vim +PlugInstall +qall
+    echo "$vim GoInstallBinaries..."
+    $vim +GoInstallBinaries +qall
 }
 
 proxyOn(){

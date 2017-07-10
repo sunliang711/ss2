@@ -9,6 +9,7 @@ action=${1}
 vim=${2}
 proxy=${3}
 
+echo "proxy: $proxy"
 proxyOn "$proxy"
 
 case $action in
