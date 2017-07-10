@@ -52,7 +52,7 @@ case $(uname) in
         alias ls='ls -FG'
         alias editcfg='vi ~/.bash_profile'
         alias brew='echo "use socks5 proxy"&&ALL_PROXY=socks5://localhost:1080 brew'
-        export PATH=/usr/local/Cellar/privoxy/3.0.26/sbin:$PATH
+        # export PATH=/usr/local/Cellar/privoxy/3.0.26/sbin:$PATH
         ;;
 esac
 alias halt='sudo shutdown -h now'
