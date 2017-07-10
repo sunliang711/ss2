@@ -263,9 +263,9 @@ installVimGo(){
         echo "valid input is vim or nvim!" >&2
         exit 1
     fi
-    sed -ibak "s+\"\(Plug 'fatih/vim-go'\)+\1/" $cfgFile
+    sed -ibak "s|\"[ ]*\(Plug 'fatih/vim-go'\)|\1|" $cfgFile
     \rm "${cfgFile}bak"
-    export GOPATH=~/Documents/go
+    export GOPATH=~/go
 
     $vim PlugInstall +qall
     $vim GoInstallBinaries +qall
