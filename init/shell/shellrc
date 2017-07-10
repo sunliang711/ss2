@@ -483,6 +483,7 @@ EOF
 brew(){
     echo "This is a brew wrap function that can use proxy."
     echo "For example: brew [-p proxyString] cmd..."
+    echo
     proxy=
     while getopts "p:h" opt;do
         case "$opt" in
@@ -497,12 +498,14 @@ brew(){
     shift $(($OPTIND-1))
     if [ -n "$proxy" ];then
         echo "Using proxy: $proxy"
+        echo
         ALL_PROXY="$proxy"
     fi
     if (($#<1));then
         echo "Need cmd (for example: install ,list ,info)"
     else
-        /usr/local/bin/brew "$@"
+        # /usr/local/bin/brew "$@"
+        command brew "$@"
     fi
 }
 #END function
