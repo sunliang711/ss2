@@ -51,7 +51,7 @@ case $(uname) in
         alias l='ls -FG'
         alias ls='ls -FG'
         alias editcfg='vi ~/.bash_profile'
-        alias brew='echo "use socks5 proxy ALL_PROXY=socks5://localhost:1080"&&ALL_PROXY=socks5://localhost:1080 brew'
+        # alias brew='echo "use socks5 proxy ALL_PROXY=socks5://localhost:1080"&&ALL_PROXY=socks5://localhost:1080 brew'
         # export PATH=/usr/local/Cellar/privoxy/3.0.26/sbin:$PATH
         ;;
 esac
@@ -478,6 +478,32 @@ Subject: $subject
 $content
 EOF
     ssmtp $receiver < $mailfile && echo "Your email has sent successfully!"
+}
+
+brew(){
+    echo "This is a brew wrap function that can use proxy."
+    echo "For example: brew [-p proxyString] cmd..."
+    proxy=
+    while getopts "p:h" opt;do
+        case "$opt" in
+            p)
+                proxy=$OPTARG
+                ;;
+            h)
+                echo "Usage: -p proxyString cmd..."
+                ;;
+        esac
+    done
+    shift $(($OPTIND-1))
+    if [ -n "$proxy" ];then
+        echo "Using proxy: $proxy"
+        ALL_PROXY="$proxy"
+    fi
+    if (($#<1));then
+        echo "Need cmd (for example: install ,list ,info)"
+    else
+        /usr/local/bin/brew "$@"
+    fi
 }
 #END function
 
