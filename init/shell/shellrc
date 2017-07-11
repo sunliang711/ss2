@@ -99,6 +99,12 @@ if command -v free >/dev/null 2>&1;then
         alias free='free -h'
     fi
 fi
+
+if command -v proxychains >/dev/null 2>&1;then
+    alias pc='proxychains'
+elif command -v proxychains4 >/dev/null 2>&1;then
+    alias pc='proxychains4'
+fi
 #END alias
 
 #BEGIN function
@@ -453,6 +459,18 @@ whouseport(){
     esac
 }
 mailto(){
+    #homebrew中有gnu版本的常用工具，比如grep sed
+    #默认安装的时候为了和mac自带的区分，他们的名字前面加个字母g
+    #如何安装这些gnu工具参考dev-mac文件
+    GREP=grep
+    if [ "$(uname)" == "Darwin" ];then
+        if ! command -v ggrep >/dev/null 2>&1;then
+            echo "ggrep not installed."
+            exit 1
+        fi
+        #前提是先安装gnu grep
+        GREP=ggrep
+    fi
     if ! command -v ssmtp >/dev/null 2>&1;then
         echo "Please install ssmtp and configure it firstly!"
         return 1
@@ -466,7 +484,7 @@ mailto(){
     subject=$2
     content=$3
     #过滤注释，因为里面可能有老的配置
-    From=$(sed -rn '/^[^#]/p' $cfg | grep -oP '(?<=root=).+')
+    From=$(sed -rn '/^[^#]/p' $cfg | $(GREP) -oP '(?<=root=).+')
     mailfile=/tmp/ssmtp-tmpfile
     echo "From : $From"
     echo "mail file : $mailfile"
