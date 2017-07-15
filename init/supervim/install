@@ -1,5 +1,13 @@
 #!/bin/bash
 
+checkCmd(){
+    if (($#>0));then
+        if ! command -v $1 >/dev/null 2>&1;then
+            echo "Need cmd: $1"
+            exit 1
+        fi
+    fi
+}
 help=0
 proxy=""
 vimGo=0
@@ -121,7 +129,7 @@ fi
 
 if (($vimGo==1));then
     echo "Install vim-go..."
-    $vim +GoInstallBinaries +qall
+    $whichVim +GoInstallBinaries +qall
 fi
 
 help(){
@@ -169,14 +177,6 @@ installDependence(){
     fi
 }
 
-checkCmd(){
-    if (($#>0));then
-        if ! command -v $1 >/dev/null 2>&1;then
-            echo "Need cmd: $1"
-            exit 1
-        fi
-    fi
-}
 
 #安装airline需要用的字体
 installFont(){
