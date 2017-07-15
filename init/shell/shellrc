@@ -19,7 +19,8 @@ append_path /usr/bin
 append_path /sbin
 append_path /bin
 
-append_path $GOPATH/bin
+
+[ -n "$GOPATH" ] && append_path $GOPATH/bin
 
 #export LS_COLORS=$LS_COLORS:"di=0;33:"
 #export PS1='[\u@\h \[\e[32;1m\]\W\\$\e[0m'
@@ -47,7 +48,6 @@ case $(uname) in
         alias ll='ls -lF --color=auto'
         alias l='ls -F --color=auto'
         alias ls='ls -F --color=auto'
-        alias editcfg='vi ~/.bashrc'
         ;;
     "Darwin")
         alias lA='ls -aFG'
@@ -55,7 +55,6 @@ case $(uname) in
         alias ll='ls -lFG'
         alias l='ls -FG'
         alias ls='ls -FG'
-        alias editcfg='vi ~/.bash_profile'
         # alias brew='echo "use socks5 proxy ALL_PROXY=socks5://localhost:1080"&&ALL_PROXY=socks5://localhost:1080 brew'
         # export PATH=/usr/local/Cellar/privoxy/3.0.26/sbin:$PATH
         ;;
@@ -130,7 +129,6 @@ if command -v git >/dev/null 2>&1;then
         fi
     }
     gcclone(){
-        gpoff
         p=${1:?"Usage: gcclone coding.netAccount/xx.git [newDir]"}
         if (($#>1));then
             newname=${2}
@@ -171,6 +169,11 @@ echoExec(){
     echo "$cmd ..."
     eval "$cmd"
 }
+
+slientExe(){
+    eval "$@" >/dev/null 2>&1
+}
+
 
 proxyon(){
     #delete: grep -P can not work on mac
@@ -367,10 +370,6 @@ bk(){
         mv -v "${file}.${i}" "${file}.${j}" 2>/dev/null
     done
     mv -v "${file}" "${file}.1"
-}
-
-slientExe(){
-    eval "$@" >/dev/null 2>&1
 }
 
 godoc(){
