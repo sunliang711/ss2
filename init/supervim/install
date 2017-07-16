@@ -55,6 +55,12 @@ else
     exit 1
 fi
 
+#在whichVim后面还有个参数,则这个参数作为socks5代理
+#这样用来应对非本地socks5代理的情况,也就是不用socks5://localhost:1080
+if [ -n "$2" ];then
+    proxy=$2
+fi
+
 echo "Install supervim for $whichVim"
 echo "Config file is $cfg"
 echo "Root dir is $root"
