@@ -11,14 +11,17 @@ basicApps="neovim vim git openssh net-tools tree screenfetch wget cronie unzip z
 devApps="base-devel linux-headers clang cmake python boost python-pip go go-tools"
 
 read -p "Install development apps (ie:clang python boost go) [Y/n] " -t 3 installDev
-pacman -Syu --noconfirm --needed
+echo "pacman -Syu ..."
+pacman -Syu --noconfirm --needed >/dev/null 2>&1 || { echo "pacman upate failed!";exit 1; }
 for app in ${basicApps};do
-    pacman -S $app --noconfirm --needed
+    echo "Install $app..."
+    pacman -S $app --noconfirm --needed >/dev/null 2>&1
 done
 
 if [[ "$installDev" != [nN] ]];then
     for app in ${devApps};do
-        pacman -S $app --noconfirm --needed
+        echo "Install $app..."
+        pacman -S $app --noconfirm --needed >/dev/null 2>&1
     done
 fi
 
