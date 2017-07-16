@@ -1,31 +1,23 @@
 #!/bin/bash
 
 help=0
-all=0
 proxy=""
-font=0
 vimGo=0
 ycm=0
 
 whichVim=""
 cfg=""
 root=""
-while getopts "hafgp:y" opt;do
+while getopts "hgpy" opt;do
     case "$opt" in
         h)
             help=1
-            ;;
-        a)
-            all=1
-            ;;
-        f)
-            font=1
             ;;
         g)
             vimGo=1
             ;;
         p)
-            proxy=$OPTARG
+            proxy="socks5://localhost:1080"
             echo "Proxy is :$proxy"
             ;;
         y)
@@ -37,6 +29,11 @@ while getopts "hafgp:y" opt;do
     esac
 done
 
+if (($help==1));then
+    help
+    exit 0
+fi
+
 shift $((OPTIND-1))
 whichVim=$1
 if [[ "$whichVim" == "nvim" ]];then
@@ -46,12 +43,13 @@ elif [[ "$whichVim" == "vim" ]];then
     root="$HOME/.vim"
     cfg="$HOME/.vimrc"
 
-    version=$(\vim --version | grep -Po '(?<=Vi IMproved )\d+\.\d+')
-    echo "vim version is ${version}"
-    if (( $(echo "$version>=7.4" | bc -l) )) ;then
-        #vim 7.4以后，vimrc文件可以放到.vim目录中
-        cfg="$root/vimrc"
-    fi
+    #TODO mac 下的grep不支持-P
+    # version=$(\vim --version | grep -Po '(?<=Vi IMproved )\d+\.\d+')
+    # echo "vim version is ${version}"
+    # if (( $(echo "$version>=7.4" | bc -l) )) ;then
+    #     #vim 7.4以后，vimrc文件可以放到.vim目录中
+    #     cfg="$root/vimrc"
+    # fi
 else
     echo "Unknown vim type: $whichVim! Not vim or nvim."
     exit 1
@@ -61,52 +59,21 @@ echo "Install supervim for $whichVim"
 echo "Config file is $cfg"
 echo "Root dir is $root"
 
-if (($help==1));then
-    help
-    exit 0
-fi
+checkCmd $whichVim
 
-if (($all==1));then
-    all
-    exit 0
-fi
-
-if (($font==1));then
-    installFont
-fi
-
-mkdir -pv $root/autoload
-mkdir -pv $root/plugins
-
-cp -r ./colors $root
-cp -r ./ftplugin $root
-
-echo  "Downloading vim-plug from github..."
+CURL=curl
 if [ -n "$proxy" ];then
-echo "use proxy5:$proxy"
-    curl --socks5 "$proxy" -fLo $root/autoload/plug.vim --create-dirs \
-        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-else
-    curl -fLo $root/autoload/plug.vim --create-dirs \
-        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    CURL="curl --socks5 $proxy"
+    echo "set git proxy to $proxy"
+    git config --global http.proxy "$proxy"
+    git config --global https.proxy "$proxy"
 fi
 
-if [[ "$whichVim" == "nvim" ]];then
-    sudo -H -E pip install --upgrade pip
-    sudo -H -E pip install --upgrade neovim
-    # if netstat -tan|grep :8118;then
-    #     sudo -H pip --proxy 127.0.0.1:8118 install --upgrade pip
-    #     sudo -H pip --proxy 127.0.0.1:8118 install --upgrade neovim
-    # else
-    #     sudo -H pip install --upgrade pip
-    #     sudo -H pip install --upgrade neovim
-    # fi
-fi
+installBasic
 
-cp -v ./install $cfg
 if (($ycm==1));then
     sed -ibak "s|\"[ ]*\(Plug 'Valloric/YouCompleteMe'\)|\1|" $cfg
-    \rm "${cfgFile}bak"
+    rm -f "${cfg}bak"
 
     if [[ "$whichVim" == "vim" ]];then
         dest="$HOME/.vim/plugins/YouCompleteMe"
@@ -116,7 +83,7 @@ if (($ycm==1));then
 fi
 if (($vimGo==1));then
     sed -ibak "s|\"[ ]*\(Plug 'fatih/vim-go'\)|\1|" $cfg
-    \rm "${cfg}bak"
+    rm -f "${cfg}bak"
     export GOPATH=~/go
 
 fi
@@ -129,12 +96,12 @@ if (($ycm==1));then
     if [ -d "$dest" ];then
         cd "$dest"
         option=
-        read -p "Ycm for clang(cpp)? [Y/n]" -t 2 clang
+        read -p "Ycm for clang(cpp)? [Y/n]" clang
         if [[ "$clang" != [nN] ]];then
             option+=" --clang-completer "
             option+=" --system-libclang "
         fi
-        read -p "Ycm for golang? [Y/n]" -t 2 golang
+        read -p "Ycm for golang? [Y/n]"  golang
         if [[ "$golang" != [nN] ]];then
             option+=" --gocode-completer "
         fi
@@ -154,8 +121,7 @@ fi
 help(){
     echo "Usage: $(basename $0) OPTIONS vim/nvim"
     echo "OPTIONS:"
-    echo -e "\t\t-f for install font"
-    echo -e "\t\t-p socks5Proxy  proxy set"
+    echo -e "\t\t-p Using socks5://localhost:1080 proxy"
     echo -e "\t\t-g for vim-go"
     echo -e "\t\t-y for YouCompleteMe"
 }
@@ -164,29 +130,45 @@ installDependence(){
     #arch
     if command -v pacman >/dev/null 2>&1;then
         archApps="linux-headers clang neovim vim cmake python boost python-pip go go-tools fontconfig ctags "
-        sudo pacman -Syu --noconfirm
+        echo "pacman update..."
+        sudo pacman -Syu --noconfirm >/dev/null 2>&1
         for tool in ${archApps};do
-            sudo pacman -S $tool --noconfirm --needed
+            echo "Install $tool..."
+            sudo pacman -S $tool --noconfirm --needed >/dev/null 2>&1
         done
     fi
 
     #fedora
     if command -v dnf >/dev/null 2>&1;then
         fedoraApps="kernel-devel vim clang python-devel python-pip python3-devel python3-pip cmake golang golang-godoc boost-devel ncurses-devel "
-        sudo dnf update -y
-        sudo dnf groupinstall "development tools" -y
+        echo "dnf update..."
+        sudo dnf update -y >/dev/null 2>&1
+        echo "dnf install dev tools..."
+        sudo dnf groupinstall "development tools" -y >/dev/null 2>&1
         for tool in ${fedoraApps};do
-            sudo dnf install $tool -y
+            echo "Install $tool..."
+            sudo dnf install $tool -y >/dev/null 2>&1
         done
     fi
 
     #ubuntu
     if command -v apt-get >/dev/null 2>&1;then
         ubuntuApps="build-essential linux-headers-generic vim vim-gtk cmake clang python-apt python-dev python-pip python3-dev python3-pip libboost-all-dev golang golang-golang-x-tools ncurses-dev "
-        sudo apt-get update -y
+        echo "apt-get update..."
+        sudo apt-get update -y >/dev/null 2>&1
         for tool in ${ubuntuApps};do
-            sudo apt-get install $tool -y
+            echo "Install $tool..."
+            sudo apt-get install $tool -y >/dev/null 2>&1
         done
+    fi
+}
+
+checkCmd(){
+    if (($#>0));then
+        if ! command -v $1 >/dev/null 2>&1;then
+            echo "Need cmd: $1"
+            exit 1
+        fi
     fi
 }
 
@@ -230,4 +212,41 @@ installFont(){
     esac
 }
 
+installBasic(){
+    checkCmd curl
+    installDependence
+    installFont
 
+    uninstall
+
+    mkdir -pv $root/autoload
+    mkdir -pv $root/plugins
+
+    #copy color scheme
+    cp -r colors $root
+    #copy ftplugin
+    cp -r ftplugin $root
+
+    msg  "Downloading vim-plug from github..."
+    $CURL -fLo $root/autoload/plug.vim --create-dirs \
+            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim || { echo "download vim-plug failed.";uninstall; exit 1; }
+
+    if [[ "$whichVim" == "nvim" ]];then
+        if [ -n "$proxy" ];then
+            echo "Using proxy 127.0.0.1:8118 to install pip and neovim"
+            sudo -H pip --proxy 127.0.0.1:8118 install --upgrade pip || { echo "pip install failed."; uninstall; exit 1; }
+            sudo -H pip --proxy 127.0.0.1:8118 install --upgrade neovim || { echo "pip install neovim failed."; uninstall; exit 1; }
+        else
+            sudo -H -E pip install --upgrade pip
+            sudo -H -E pip install --upgrade neovim
+        fi
+    fi
+
+    cp  init.vim $cfg
+    $whichVim +PlugInstall +qall
+}
+
+uninstall(){
+    rm -rf $root
+    rm -f $cfg
+}
