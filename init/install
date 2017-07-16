@@ -100,9 +100,12 @@ fi
 
 ##Set golang
 if [[ "$setGolang" == [yY] ]];then
-    cd golang
-    /bin/bash setGolang
-    cd -
+    if command -v go >/dev/null 2>&1;then
+        GOPATH=$HOME/go
+        if [ ! -d $GOPATH ];then
+            mkdir -pv $GOPATH/src
+        fi
+    fi
 fi
 
 ##Set shell
