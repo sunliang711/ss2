@@ -1,4 +1,6 @@
 #!/bin/bash
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPTDIR"
 
 if ! command -v pacman >/dev/null 2>&1;then
     echo "Only support archlinux currently!"
@@ -6,7 +8,8 @@ if ! command -v pacman >/dev/null 2>&1;then
 fi
 
 install(){
-    sudo pacman -S docker --noconfirm --needed
+    echo "Install docker..."
+    sudo pacman -S docker --noconfirm --needed >/dev/null 2>&1
     #set docker
     #add user to docker group
     if command -v docker>/dev/null 2>&1;then

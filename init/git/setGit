@@ -32,8 +32,8 @@ gitconfig(){
     fi
 }
 
-read -p "git user.email: (default: sunliang711@163.com)" -t 5 email
-read -p "git user.name: (default: sunliang)" -t 5 name
+read -p "git user.email: (default: sunliang711@163.com)" -t 3 email
+read -p "git user.name: (default: sunliang)" -t 3 name
 if [[ -z "$email" ]];then
     email="sunliang711@163.com"
 fi
