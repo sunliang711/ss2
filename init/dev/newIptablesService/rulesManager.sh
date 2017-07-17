@@ -49,7 +49,13 @@ addPluginPort(){
     checkType $type || exit 1
     port=$2
     checkPort $port || exit 1
-    sqlite3 "$db" "insert into portConfig values(\"$type\",$port,1,0,0,1);" || { echo "Add failed"; exit 1; }
+    #1先搜索是否有该记录(根据type和port),如果有,则将enabled置1,没有才删除
+    exist=$(sqlite3 "$db" "select * from portConfig where type=\"$type\" and port=\"$port\";")
+    if [ -z "$exist" ];then
+        sqlite3 "$db" "insert into portConfig values(\"$type\",$port,1,0,0,1);" || { echo "Add failed"; exit 1; }
+    else
+        sqlite3 "$db" "update portConfig set enabled=1 where type=\"$type\" and port=\"$port\";"
+    fi
 }
 del(){
     usage="Usage: del type port\n\t\tfor example: del tcp 8388\n"
